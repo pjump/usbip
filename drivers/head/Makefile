@@ -26,7 +26,7 @@
 # KSOURCE should be pointed to the build directory of your kernel.
 # 
 DEBUG ?= n
-KSOURCE ?= /usr/src/linux
+KSOURCE := /lib/modules/$(shell uname -r)/build
 
 
 %.x:%.c
