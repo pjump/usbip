@@ -21,8 +21,12 @@
  */
 
 #include <linux/platform_device.h>
+#include <linux/usb.h>
+#include <linux/usb/hcd.h>
+
 #include HCD_HEADER
 
+#define VHCI_NPORTS 8
 
 struct vhci_device {
 	struct usb_device *udev;
@@ -57,6 +61,31 @@ struct vhci_device {
 	wait_queue_head_t waitq_tx;
 };
 
+/* for usb_bus.hcpriv */
+struct vhci_hcd {
+	spinlock_t	lock;
+
+	u32	port_status[VHCI_NPORTS];
+
+	unsigned	resuming:1;
+	unsigned long	re_timeout;
+
+	atomic_t seqnum;
+
+	/*
+	 * NOTE:
+	 * wIndex shows the port number and begins from 1.
+	 * But, the index of this array begins from 0.
+	 */
+	struct vhci_device vdev[VHCI_NPORTS];
+
+	/* vhci_device which has not been assiged its address yet */
+	int pending_port;
+};
+
+
+
+
 
 /* urb->hcpriv, use container_of() */
 struct vhci_priv {
@@ -84,31 +113,6 @@ struct vhci_unlink {
  * would be 31 because the event_bits[1] of struct usb_hub is defined as
  * unsigned long in hub.h
  */
-#define VHCI_NPORTS 8
-
-/* for usb_bus.hcpriv */
-struct vhci_hcd {
-	spinlock_t	lock;
-
-	u32	port_status[VHCI_NPORTS];
-
-	unsigned	resuming:1;
-	unsigned long	re_timeout;
-
-	atomic_t seqnum;
-
-	/*
-	 * NOTE:
-	 * wIndex shows the port number and begins from 1.
-	 * But, the index of this array begins from 0.
-	 */
-	struct vhci_device vdev[VHCI_NPORTS];
-
-	/* vhci_device which has not been assiged its address yet */
-	int pending_port;
-};
-
-
 extern struct vhci_hcd *the_controller;
 extern struct attribute_group dev_attr_group;
 

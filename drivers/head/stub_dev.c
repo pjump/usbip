@@ -398,7 +398,7 @@ static int stub_probe(struct usb_interface *interface, const struct usb_device_i
 {
 	struct usb_device *udev = interface_to_usbdev(interface);
 	struct stub_device *sdev = NULL;
-	char *udev_busid = interface->dev.parent->bus_id;
+	char *udev_busid = interface->dev.parent->bus->name;
 	int err = 0;
 
 	udbg("Enter\n");

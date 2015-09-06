@@ -23,6 +23,7 @@
 
 #include "usbip_common.h"
 #include "vhci.h"
+#include <linux/module.h>
 
 #define DRIVER_VERSION " $Id: vhci_hcd.c 66 2008-04-20 13:19:42Z hirofuchi $ "
 #define DRIVER_AUTHOR "Takahiro Hirofuchi"
@@ -260,8 +261,12 @@ static inline void hub_descriptor(struct usb_hub_descriptor *desc)
 	desc->wHubCharacteristics = (__force __u16)
 		(__constant_cpu_to_le16 (0x0001));
 	desc->bNbrPorts = VHCI_NPORTS;
+/*
 	desc->bitmap [0] = 0xff;
 	desc->bitmap [1] = 0xff;
+*/
+	desc->bPwrOn2PwrGood = 0xff;
+	desc->bHubContrCurrent = 0xff;
 }
 
 
@@ -1067,7 +1072,7 @@ static int vhci_hcd_probe(struct platform_device *pdev)
 
 	/* will be removed */
 	if (pdev->dev.dma_mask) {
-		info("vhci_hcd DMA not supported\n");
+		//info("vhci_hcd DMA not supported\n");
 		return -EINVAL;
 	}
 
@@ -1076,7 +1081,7 @@ static int vhci_hcd_probe(struct platform_device *pdev)
 	 * Allocate and initialize hcd.
 	 * Our private data is also allocated automatically.
 	 */
-	hcd = usb_create_hcd(&vhci_hc_driver, &pdev->dev, pdev->dev.bus_id);
+	hcd = usb_create_hcd(&vhci_hc_driver, &pdev->dev, pdev->dev.bus->name);
 	if (!hcd) {
 		uerr("create hcd failed\n");
 		return -ENOMEM;
@@ -1224,7 +1229,7 @@ static int __init vhci_init(void)
 	if (usb_disabled())
 		return -ENODEV;
 
-	info("driver %s, %s\n", driver_name, DRIVER_VERSION);
+	//info("driver %s, %s\n", driver_name, DRIVER_VERSION);
 
 	ret = platform_driver_register(&vhci_driver);
 	if (ret < 0)

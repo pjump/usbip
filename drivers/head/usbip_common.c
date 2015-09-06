@@ -20,11 +20,23 @@
  * USA.
  */
 
+
 #include <linux/kernel.h>
 #include <linux/file.h>
 #include <linux/tcp.h>
 #include <linux/in.h>
+#include <linux/usb.h>
+#include <linux/usb/hcd.h>
 #include "usbip_common.h"
+
+#include <linux/export.h>
+#include <linux/module.h>
+
+#if HAVE_UNLOCKED_IOCTL
+    #include <linux/mutex.h>
+#else
+    #include <linux/smp_lock.h>
+#endif
 
 /* version information */
 #define DRIVER_VERSION "$Id: usbip_common.c 66 2008-04-20 13:19:42Z hirofuchi $"
@@ -41,6 +53,8 @@ unsigned long usbip_debug_flag = 0;
 #endif
 EXPORT_SYMBOL(usbip_debug_flag);
 
+
+#define URB_NO_SETUP_DMA_MAP URB_DMA_MAP_SINGLE
 
 /* FIXME */
 struct device_attribute dev_attr_usbip_debug;
@@ -379,15 +393,25 @@ EXPORT_SYMBOL(usbip_dump_header);
 int usbip_thread(void *param)
 {
 	struct usbip_task *ut = (struct usbip_task *) param;
+	struct mutex fs_mutex;
+	memset(&fs_mutex, 0, sizeof(struct mutex));
 
 	if (!ut)
 		return -EINVAL;
 
-	lock_kernel();
+#if HAVE_UNLOCKED_IOCTL
+   mutex_lock(&fs_mutex);
+#else
+   lock_kernel();
+#endif
 	daemonize(ut->name);
 	allow_signal(SIGKILL);
 	ut->thread = current;
-	unlock_kernel();
+#if HAVE_UNLOCKED_IOCTL
+   mutex_unlock(&fs_mutex);
+#else
+   unlock_kernel();
+#endif
 
 	/* srv.rb must wait for rx_thread starting */
 	complete(&ut->thread_done);
@@ -962,7 +986,7 @@ EXPORT_SYMBOL(usbip_recv_xbuff);
 
 static int __init usbip_common_init(void)
 {
-	info(DRIVER_DESC "" DRIVER_VERSION);
+	//info(DRIVER_DESC "" DRIVER_VERSION);
 
 	return 0;
 }

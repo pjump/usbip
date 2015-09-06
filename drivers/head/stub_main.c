@@ -46,6 +46,7 @@ struct kmem_cache *stub_priv_cache = NULL;
  * remote host.
  */
 #define MAX_BUSID 16
+#define BUS_ID_SIZE 16
 static char busid_table[MAX_BUSID][BUS_ID_SIZE];
 static spinlock_t busid_table_lock;
 
@@ -259,7 +260,7 @@ static int __init usb_stub_init(void)
 	}
 
 
-	info(DRIVER_DESC "" DRIVER_VERSION);
+	//info(DRIVER_DESC "" DRIVER_VERSION);
 
 	memset(busid_table, 0, sizeof(busid_table));
 	spin_lock_init(&busid_table_lock);

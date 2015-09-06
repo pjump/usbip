@@ -34,7 +34,7 @@ KSOURCE := /lib/modules/$(shell uname -r)/build
 
 KBUILD_VERBOSE:=1
 
-HCD_HEADER:=$(KSOURCE)/drivers/usb/core/hcd.h
+HCD_HEADER:=$(KSOURCE)/include/config/usbip/vhci/hcd.h
 
 usbip_common_mod-objs := usbip_common.o usbip_event.o
 usbip-objs 	  := stub_dev.o stub_main.o stub_rx.o stub_tx.o

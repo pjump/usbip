@@ -23,7 +23,11 @@
 #include "usbip_common.h"
 #include "stub.h"
 
+#include <linux/usb/ch11.h>
+
 #include HCD_HEADER
+
+
 
 
 static int is_clear_halt_cmd(struct urb *urb)
@@ -159,7 +163,7 @@ static int tweak_set_configuration_cmd(struct urb *urb)
 	 * A user may need to set a special configuration value before
 	 * exporting the device.
 	 */
-	uinfo("set_configuration (%d) to %s\n", config, urb->dev->dev.bus_id);
+	uinfo("set_configuration (%d) to %s\n", config, urb->dev->dev.bus->name);
 	uinfo("but, skip!\n");
 
 	return 0;
@@ -177,7 +181,7 @@ static int tweak_reset_device_cmd(struct urb *urb)
 	value = le16_to_cpu(req->wValue);
 	index = le16_to_cpu(req->wIndex);
 
-	uinfo("reset_device (port %d) to %s\n", index, urb->dev->dev.bus_id);
+	uinfo("reset_device (port %d) to %s\n", index, urb->dev->dev.bus->name);
 
 	/* all interfaces should be owned by usbip driver, so just reset it. */
 	ret = usb_lock_device_for_reset(urb->dev, NULL);
@@ -187,7 +191,7 @@ static int tweak_reset_device_cmd(struct urb *urb)
 	}
 
 	/* try to reset the device */
-	ret = usb_reset_composite_device(urb->dev, NULL);
+	ret = usb_reset_device(urb->dev);
 	if (ret < 0)
 		uerr("device reset\n");
 

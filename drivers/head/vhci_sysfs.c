@@ -123,7 +123,7 @@ static ssize_t show_status(struct device *dev, struct device_attribute *attr,
 			out += sprintf(out, "%03u %08x ",
 					vdev->speed, vdev->devid);
 			out += sprintf(out, "%16p ", vdev->ud.tcp_socket);
-			out += sprintf(out, "%s", vdev->udev->dev.bus_id);
+			out += sprintf(out, "%s", vdev->udev->dev.bus->name);
 
 		} else
 			out += sprintf(out, "000 000 000 0000000000000000 0-0");
@@ -220,7 +220,7 @@ static int valid_args(__u32 rhport, enum usb_device_speed speed)
 		case USB_SPEED_LOW:
 		case USB_SPEED_FULL:
 		case USB_SPEED_HIGH:
-		case USB_SPEED_VARIABLE:
+		case USB_SPEED_UNKNOWN:
 			break;
 
 		default:
